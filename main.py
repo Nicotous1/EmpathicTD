@@ -2,48 +2,37 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import empathicTD as empTD
-from policies import Policy
+import offTD as offTD
+from policies import Policy, LeftRightPolicy
 from models import Model
         
         
 
-pi = Policy([[0, 1],
-               [0, 1]])
+pi = LeftRightPolicy(n = 2, p_right = 1)
 
-mu = Policy([[0.5, 0.5],
-               [0.5, 0.5]])
+mu = LeftRightPolicy(n = 2) # Uniform is default
     
-model = Model(features = [[1],[3]], R = [0,0],
+model = Model(features = [[1, 0], [0, 1]], R = [3,10],
               pi = pi, mu = mu,
-              I = [1,0], discounts = [0.9, 0.9])  
+              I = [0.5,0.5], discounts = [0.9, 0.9],
+              lambdas = [0.5,0.5])  
 
 T = 10000
 N = 500
-theta, F, E, S = empTD.run(model, T, N)   
+theta_emp, S, F, A = empTD.run(model, T, N)  
+theta_neu, S = offTD.run(model, T, N)    
 
-theta_opt = empTD.optimal_run(model, T)
+theta_neu_opt = offTD.optimal_run(model, T)
+theta_emp_opt = empTD.optimal_run(model, T)
 
 
-mean = theta.mean(axis = 1)
-std = theta.std(axis = 1)
-
+i = 1
 plt.title("EmpathicTD with {} particles".format(N))
-plt.plot(theta.squeeze(), linewidth = 0.2, c = "blue")
-plt.plot(theta_opt, c = "black", linewidth = 2)
-plt.ylim(-3, 3)
+plt.plot(theta_emp[:, : , i].squeeze(), linewidth = 0.2, c = "blue")
+plt.plot(theta_neu[:, : , i].squeeze(), linewidth = 0.2, c = "red")
+plt.plot(theta_neu_opt[:, i], c = "black", linewidth = 3)
+plt.plot(theta_emp_opt[:, i], c = "black", linewidth = 3)
+plt.ylim(0, 100)
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

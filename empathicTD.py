@@ -98,7 +98,7 @@ def optimal_run(model, T, alpha = 0.001, S0 = 0, theta0 = 1):
         Return the optimal descent with the key matrix of the model
     '''
     A, b = key_matrixes(model)
-    thetas = np.zeros(T+1)
+    thetas = np.zeros((T+1, model.p))
     thetas[0] = theta0
     for t in range(0, T):
         thetas[t+1] = thetas[t] + alpha * (b - np.dot(A, thetas[t]))

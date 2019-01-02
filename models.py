@@ -22,6 +22,6 @@ class Model(object):
         self.N_states = len(features) # Number of states
         self.p = self.features.shape[1] # Dimension of the features
         
-        self.I = np.ones(self.N_states) if I is None else np.array(I) # Intereset for each state (default is uniform)
+        self.I = np.ones(self.N_states)/self.N_states if I is None else np.array(I) # Intereset for each state (default is uniform)
         self.lambdas = np.zeros(self.N_states) if lambdas is None else np.array(lambdas) # bootsrap ratio for each state (default is zeros for all)
         self.discounts = np.zeros(self.N_states) if discounts is None else np.array(discounts) # Discount rate for each state (default is zero for all)

@@ -31,9 +31,19 @@ class Policy(object):
     
     def parallel_steps(self, S):
         ''' Pick the next step for all the states in S (in parallel) '''
-        S = S.copy()
+        S_new = S.copy()
         for s in np.unique(S):
             idxs = np.where(S == s)
             n = len(idxs[0]) # Number of chain in state s
-            S[idxs] = np.random.choice(2, n, p = self.P[s])
-        return S
+            S_new[idxs] = np.random.choice(len(self.P), n, p = self.P[s])
+        return S_new
+    
+class LeftRightPolicy(Policy):
+    def __init__(self, n, p_right = 0.5):
+        p_left = 1 - p_right
+        P = np.zeros((n,n))
+        P[0:-1, 1:] += np.identity(n-1) * p_right
+        P[1:, 0:-1] += np.identity(n-1) * p_left
+        P[0, 0] = p_left
+        P[-1,-1] = p_right        
+        super(LeftRightPolicy, self).__init__(P)
