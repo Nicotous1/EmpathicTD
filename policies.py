@@ -39,8 +39,18 @@ class Policy(object):
         return S_new
     
 class LeftRightPolicy(Policy):
-    def __init__(self, n, p_right = 0.5):
-        p_left = 1 - p_right
+    def __init__(self, n, p_right = None, p_left = None):
+        # Default is uniform
+        if p_right is None and p_left is None:
+            p_right, p_left = 0.5, 0.5
+            
+        # Normalize
+        if p_right is None:
+            p_right = 1 - p_left
+        if p_left is None:
+            p_left = 1 - p_right
+            
+        # Set P
         P = np.zeros((n,n))
         P[0:-1, 1:] += np.identity(n-1) * p_right
         P[1:, 0:-1] += np.identity(n-1) * p_left

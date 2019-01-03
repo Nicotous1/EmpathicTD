@@ -24,3 +24,14 @@ def to_array_of_vectors(X):
         return X.reshape((shape[0], 1))
     else:
         return X
+    
+def mom(X, K = 10):
+    '''
+     Compute the mediam of means with K classes
+    '''
+    C = np.random.randint(0, K, len(X))
+    means = []
+    for k in range(K):
+        m = np.mean(X[np.where(C == k)], axis = 0)
+        means.append(m)
+    return np.median(means, axis = 0)

@@ -2,7 +2,7 @@ import numpy as np
 
 from utils import custom_mult
 
-def run(model, T, N = 1, alpha = 0.001, S0 = 0, theta0 = 1):
+def run(model, T, N = 1):
     '''
      Compute the empathic TD with T period for the model.
      It can do it for N particles in parallel.
@@ -19,9 +19,9 @@ def run(model, T, N = 1, alpha = 0.001, S0 = 0, theta0 = 1):
     S = np.zeros((T+1, N), dtype = np.int)
     
     # Set t=0
-    S[0] = S0
+    S[0] = m.S0
     F[0] = m.I[S[0]]
-    theta[0] = theta0
+    theta[0] = m.theta0
     
     # Iterating over t (in parallel for the N particles)
     for t in range(T):
@@ -46,7 +46,7 @@ def run(model, T, N = 1, alpha = 0.001, S0 = 0, theta0 = 1):
                 + m.discounts[S[t+1]] * np.sum(theta[t] * m.features[S[t+1]], axis = 1)\
                 - np.sum(theta[t] * m.features[S[t]], axis = 1)
     
-        theta[t+1] = theta[t] + custom_mult(E[t], alpha * delta)
+        theta[t+1] = theta[t] + custom_mult(E[t], m.alpha * delta)
         
     return theta, F, E, S    
         
@@ -93,13 +93,13 @@ def optimal(model):
 
 
 
-def optimal_run(model, T, alpha = 0.001, S0 = 0, theta0 = 1):
+def optimal_run(model, T):
     '''
         Return the optimal descent with the key matrix of the model
     '''
     A, b = key_matrixes(model)
     thetas = np.zeros((T+1, model.p))
-    thetas[0] = theta0
+    thetas[0] = model.theta0
     for t in range(0, T):
-        thetas[t+1] = thetas[t] + alpha * (b - np.dot(A, thetas[t]))
+        thetas[t+1] = thetas[t] + model.alpha * (b - np.dot(A, thetas[t]))
     return thetas
