@@ -30,7 +30,7 @@ def run(model, T, N = 1):
                 - np.sum(theta[t] * m.features[S[t]], axis = 1)
         theta[t+1] = theta[t] + custom_mult(m.features[S[t]], m.alpha * m.phi[S[t], S[t+1]] * delta)
         
-    return theta, S    
+    return theta  
         
 
 def key_matrixes(model):
@@ -40,7 +40,6 @@ def key_matrixes(model):
     Id = np.eye(model.N_states)
     
     gammas = np.diag(model.discounts)
-    lambdas = np.diag(model.lambdas)
     
     # Computing A
     # First P_pi_lambda
@@ -49,11 +48,6 @@ def key_matrixes(model):
     A = np.dot(np.dot(model.features.transpose(), A), model.features)
     
     # Computing B
-    #B = model.mu.D
-#    B = Id - np.dot(np.dot(model.pi.P, gammas), lambdas)
-#    B = np.linalg.inv(B)
-#    B = np.dot(model.features.transpose(), B)
-#    B = np.dot(B, model.R)
     B = np.dot(np.dot(model.mu.D, model.features).transpose(), np.dot(model.pi.P, model.R))    
         
     return A, B

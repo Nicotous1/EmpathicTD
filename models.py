@@ -29,7 +29,7 @@ class Model(object):
         self.I = np.ones(self.N_states)/self.N_states if I is None else np.array(I) # Intereset for each state (default is uniform)
         self.lambdas = np.zeros(self.N_states) if lambdas is None else np.array(lambdas) # bootsrap ratio for each state (default is zeros for all)
         self.discounts = np.zeros(self.N_states) if discounts is None else np.array(discounts) # Discount rate for each state (default is zero for all)
-        self.v_pi = v_pi
+        self.v_pi = np.array(v_pi)
         
 #
 # Utilities

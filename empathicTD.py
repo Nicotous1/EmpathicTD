@@ -48,7 +48,7 @@ def run(model, T, N = 1):
     
         theta[t+1] = theta[t] + custom_mult(E[t], m.alpha * delta)
         
-    return theta, F, E, S    
+    return theta
         
 
 def key_matrixes(model):
@@ -78,7 +78,8 @@ def key_matrixes(model):
     
     # Computing B
     B = np.dot(model.features.transpose(), np.dot(M, b))
-    B = np.dot(B, model.R)
+    #B = np.dot(B, model.R)
+    B = np.dot(B, np.dot(model.pi.P, model.R))
         
     return A, B
 
