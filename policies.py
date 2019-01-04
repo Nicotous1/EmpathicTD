@@ -8,6 +8,9 @@ class Policy(object):
     '''
     
     def __init__(self, P):
+        '''
+            Just store P and compute its stationary distrubution
+        '''
         self.P = np.array(P)
         
         self._load_stationary()
@@ -38,8 +41,12 @@ class Policy(object):
             S_new[idxs] = np.random.choice(len(self.P), n, p = self.P[s])
         return S_new
     
+    
+    
 class LeftRightPolicy(Policy):
     def __init__(self, n, p_right = None, p_left = None):
+        '''Compute the P matrix associate to the right and left policy'''
+        
         # Default is uniform
         if p_right is None and p_left is None:
             p_right, p_left = 0.5, 0.5
