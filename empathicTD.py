@@ -2,7 +2,7 @@ import numpy as np
 
 from utils import custom_mult
 
-def run(model, T, N = 1):
+def run(model, T, N = 1, verbose = True):
     '''
      Compute the empathic TD with T period for the model.
      It can do it for N particles in parallel.
@@ -25,6 +25,8 @@ def run(model, T, N = 1):
     
     # Iterating over t (in parallel for the N particles)
     for t in range(T):
+        if verbose and (t % 999 == 0):
+            print("Computing empathic TD... ({}/{})".format(t+1, T), end = "\r")
         S[t+1] = m.mu.parallel_steps(S[t]) # Pick next step
         
          # Compute F (equation 20)
@@ -42,11 +44,14 @@ def run(model, T, N = 1):
             
         # Iterate theta (equation 17)
         # delta is the parathesis of equation 17
-        delta = m.R[S[t+1]]\
+        delta = m.R[S[t], S[t+1]]\
                 + m.discounts[S[t+1]] * np.sum(theta[t] * m.features[S[t+1]], axis = 1)\
                 - np.sum(theta[t] * m.features[S[t]], axis = 1)
     
         theta[t+1] = theta[t] + custom_mult(E[t], m.alpha * delta)
+    
+    if verbose:
+        print("empathic TD has been computed for {} steps and {} particles.".format(T, N))  
         
     return theta
         
@@ -78,8 +83,8 @@ def key_matrixes(model):
     
     # Computing B
     B = np.dot(model.features.transpose(), np.dot(M, b))
-    #B = np.dot(B, model.R)
-    B = np.dot(B, np.dot(model.pi.P, model.R))
+    r_pi = np.sum(model.pi.P * model.R, axis = 1)
+    B = np.dot(B, r_pi)
         
     return A, B
 

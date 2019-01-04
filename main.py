@@ -15,7 +15,7 @@ pi = LeftRightPolicy(n = 2, p_right = 1)
 
 mu = LeftRightPolicy(n = 2) # Uniform is default
     
-model = Model(features = [[0,1], [1,0]], R = [3, 10],
+model = Model(features = [[0,1], [1,0]], R = [[0, 3], [0, 10]],
               pi = pi, mu = mu,
               I = [1, 1], discounts = [0.9, 0.9],
               lambdas = [0, 0],
@@ -45,7 +45,7 @@ model = Model(features = [[0,1], [1,0]], R = [3, 10],
 #              I = np.ones(5),
 #              S0 = 2)  
 
-T = 5000
+T = 50000
 N = 100
 theta_emp = empTD.run(model, T, N)  
 theta_neu = offTD.run(model, T, N)    
@@ -77,7 +77,7 @@ plt.plot(theta_neu[:, : , i].squeeze(), linewidth = 0.2, c = "red")
 plt.plot(theta_neu_opt[:, i], c = "black", linewidth = 3)
 plt.plot(theta_neu_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
 
-#plt.ylim(0, 3)
+plt.ylim(0, 150)
 plt.xlim(0, T)
 plt.show()
 
