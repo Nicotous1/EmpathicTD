@@ -64,3 +64,14 @@ class LeftRightPolicy(Policy):
         P[0, 0] = p_left
         P[-1,-1] = p_right        
         super(LeftRightPolicy, self).__init__(P)
+        
+        
+class RandomPolicy(Policy):
+    def __init__(self, n):
+        '''
+            Generate random markov chain matrix
+        '''
+        P = np.random.random((n,n))
+        s = np.sum(P, axis = 1)
+        P = (P.T/s).T
+        super(RandomPolicy, self).__init__(P)

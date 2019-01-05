@@ -4,7 +4,7 @@ from utils import custom_mult
 
 def run(model, T, N = 1, verbose = True):
     '''
-     Compute the empathic TD with T period for the model.
+     Compute the emphatic TD with T period for the model.
      It can do it for N particles in parallel.
     '''
     # Shortcut

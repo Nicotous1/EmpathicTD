@@ -5,7 +5,7 @@ class Model(object):
     '''
          A class to store all the parameter of the model
          Features, policies (off ond on)
-         Lambdas and discounts for the empathic TD
+         Lambdas and discounts for the emphatic TD
     '''
     
     def __init__(self, features, R, pi, theta0, S0, alpha = 0.001, mu = None, I = None, lambdas = None, discounts = None, v_pi = None):

@@ -4,7 +4,7 @@ from utils import custom_mult
 
 def run(model, T, N = 1, verbose = True):
     '''
-     Compute the empathic TD with T period for the model.
+     Compute the emphatic TD with T period for the model.
      It can do it for N particles in parallel.
     '''
     # Shortcut
@@ -26,7 +26,7 @@ def run(model, T, N = 1, verbose = True):
     # Iterating over t (in parallel for the N particles)
     for t in range(T):
         if verbose and (t % 999 == 0):
-            print("Computing empathic TD... ({}/{})".format(t+1, T), end = "\r")
+            print("Computing emphatic TD... ({}/{})".format(t+1, T), end = "\r")
         S[t+1] = m.mu.parallel_steps(S[t]) # Pick next step
         
          # Compute F (equation 20)
@@ -51,7 +51,7 @@ def run(model, T, N = 1, verbose = True):
         theta[t+1] = theta[t] + custom_mult(E[t], m.alpha * delta)
     
     if verbose:
-        print("empathic TD has been computed for {} steps and {} particles.".format(T, N))  
+        print("emphatic TD has been computed for {} steps and {} particles.".format(T, N))  
         
     return theta
         

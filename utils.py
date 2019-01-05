@@ -4,6 +4,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+
+
 
 def custom_mult(X, m):
     '''
@@ -40,17 +43,17 @@ def mom(X, K = 10):
 
 
 
-# Empathic library imports
-import empathicTD as empTD
+# emphatic library imports
+import emphaticTD as empTD
 import offTD as offTD
 
 class comparatorTD(object):
     '''
         This class below is used to make the notebook clearer.
-        It computes the offTD and the empathicTD for a given models.
-        It is written in this notebok to explain how you can use the empathicTD library.
+        It computes the offTD and the emphaticTD for a given models.
+        It is written in this notebok to explain how you can use the emphaticTD library.
         It is also very helpfull for plotting because it uses dynamic limit for y.
-        Thus, it deals with the outliers of the empathicTD.
+        Thus, it deals with the outliers of the emphaticTD.
     '''
     
     def __init__(self, model):
@@ -86,6 +89,10 @@ class comparatorTD(object):
         T, N, p = self.theta_emp.shape
         
         if figure: plt.figure()
+        
+        legends = []
+        legends.append(mlines.Line2D([], [], color='red', label='off TD'))
+        legends.append(mlines.Line2D([], [], color='blue', label='emphatic TD'))
 
         if particles:
             plt.plot(self.theta_emp[:, : , i].squeeze(), linewidth = 0.2, c = "blue")
@@ -94,19 +101,22 @@ class comparatorTD(object):
         if optimal:
             plt.plot(self.theta_emp_opt[:, i], c = "black", linewidth = 3)
             plt.plot(self.theta_off_opt[:, i], c = "black", linewidth = 3)
+            legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
             
         if mom:
             plt.plot(self.theta_emp_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
             plt.plot(self.theta_off_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
+            legends.append(mlines.Line2D([], [], color='black', linestyle="dotted", label='MOM', linewidth = 3))
         
         # Set dynamic limit (to deal with outliers)
         ymin, ymax = self._get_born([self.theta_emp_opt[:, i], self.theta_off_opt[:, i]]) if ylim is None else ylim
         plt.ylim(ymin, ymax)
   
-        plt.title("EmpathicTD and offTD with {} particles".format(N))
+        plt.title("emphaticTD and offTD with {} particles".format(N))
         plt.xlim(0, T)
         plt.ylabel("theta")
         plt.xlabel("steps")
+        plt.legend(handles=legends)
         
         
         
@@ -123,6 +133,10 @@ class comparatorTD(object):
         msve_off_opt = self.model.msve(self.theta_off_opt)
         
         if figure: plt.figure()
+        
+        legends = []
+        legends.append(mlines.Line2D([], [], color='red', label='off TD'))
+        legends.append(mlines.Line2D([], [], color='blue', label='emphatic TD'))
 
         if particles:
             plt.plot(msve_emp, linewidth = 0.2, c = "blue")
@@ -131,6 +145,7 @@ class comparatorTD(object):
         if optimal:
             plt.plot(msve_emp_opt, c = "black", linewidth = 3)
             plt.plot(msve_off_opt, c = "black", linewidth = 3)
+            legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
         
         # Set dynamic limit (to deal with outliers)
         ymin, ymax = self._get_born([msve_emp_opt, msve_off_opt]) if ylim is None else ylim
@@ -140,6 +155,7 @@ class comparatorTD(object):
         plt.ylabel("MSVE")
         plt.xlabel("steps")
         plt.xlim(0, T)
+        plt.legend(handles=legends)
         
         
             

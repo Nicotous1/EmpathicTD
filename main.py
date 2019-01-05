@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import empathicTD as empTD
+import emphaticTD as empTD
 import offTD as offTD
 from policies import Policy, LeftRightPolicy
 from models import Model
@@ -68,7 +68,7 @@ theta_neu_mom = mom(np.swapaxes(theta_neu, 0, 1))
 #
 
 i = 1
-plt.title("EmpathicTD and offTD with {} particles".format(N))
+plt.title("emphaticTD and offTD with {} particles".format(N))
 plt.plot(theta_emp[:, : , i].squeeze(), linewidth = 0.2, c = "blue")
 plt.plot(theta_emp_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
 plt.plot(theta_emp_opt[:, i], c = "black", linewidth = 3)
