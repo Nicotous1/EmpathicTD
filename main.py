@@ -1,12 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import emphaticTD as empTD
-import offTD as offTD
+from TD import EmphaticTD, OffTD
 from policies import Policy, LeftRightPolicy
 from models import Model
         
-from utils import mom
+from utils import mom, comparatorTD
         
 #
 # Modele with two states (1, 2)
@@ -22,6 +21,18 @@ model = Model(features = [[0,1], [1,0]], R = [[0, 3], [0, 10]],
               theta0 = 1,
               alpha = 0.001,
               S0 = 0)  
+
+empTD = EmphaticTD(0.001, 0)
+offTD = OffTD(0.001, 0)
+
+comparator = comparatorTD(algos = [empTD, offTD], names = ["EmpTD", "OffTD"], colors = ["red", "blue"])
+
+
+comparator.run(model, N = 100, T = 5000)
+
+comparator.plot_theta()
+
+empTD.optimal(model)
 
 ##
 ## Modele with fives states (1, 2)
@@ -45,7 +56,7 @@ model = Model(features = [[0,1], [1,0]], R = [[0, 3], [0, 10]],
 #              I = np.ones(5),
 #              S0 = 2)  
 
-T = 50000
+T = 5000
 N = 100
 theta_emp = empTD.run(model, T, N)  
 theta_neu = offTD.run(model, T, N)    

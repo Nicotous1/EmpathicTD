@@ -43,10 +43,6 @@ def mom(X, K = 10):
 
 
 
-# emphatic library imports
-import emphaticTD as empTD
-import offTD as offTD
-
 class comparatorTD(object):
     '''
         This class below is used to make the notebook clearer.
@@ -56,29 +52,33 @@ class comparatorTD(object):
         Thus, it deals with the outliers of the emphaticTD.
     '''
     
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, algos, colors = None, names = None):
+        self.algos = algos
+        self.colors = ["black"]*len(algos) if colors is None else colors
+        self.names = ["Algo {}".format(i+1) for i in range(len(algos))] if names is None else names
+        
+        self.res = None
         
         
         
-    def run(self, T, N, verbose = True):   
+        
+    def run(self, model, T, N, verbose = True):   
         '''
             Run the offTD and the empTD on the model
             Compute also the deterministic descent
                          the MOM estimator (to remove outlier)
                          the theta optimal
         '''
+        self.model = model
         
-        self.theta_emp = empTD.run(self.model, T, N, verbose = verbose)  
-        self.theta_off = offTD.run(self.model, T, N, verbose = verbose)    
-
-        self.theta_off_opt = offTD.optimal_run(self.model, T)
-        self.theta_emp_opt = empTD.optimal_run(self.model, T) 
-
-        self.theta_emp_mom = mom(np.swapaxes(self.theta_emp, 0, 1))
-        self.theta_off_mom = mom(np.swapaxes(self.theta_off, 0, 1))     
-        
-        self.theta_final = empTD.optimal(self.model)   
+        self.res = []
+        for algo in self.algos:
+            theta = algo.run(model, T, N, verbose = verbose)   
+            theta_opt = algo.optimal_run(model, T)
+            theta_mom = mom(np.swapaxes(theta, 0, 1))
+            theta_final = algo.optimal(self.model)  
+            
+            self.res.append((theta, theta_opt, theta_mom, theta_final))
         
         
         
@@ -86,33 +86,50 @@ class comparatorTD(object):
         '''
             Plot one dimension (i) of theta across the particles
         '''
-        T, N, p = self.theta_emp.shape
         
         if figure: plt.figure()
         
         legends = []
-        legends.append(mlines.Line2D([], [], color='red', label='off TD'))
-        legends.append(mlines.Line2D([], [], color='blue', label='emphatic TD'))
+        
+        ymin, ymax = None, None
+        for res, algo, color, name in zip(self.res, self.algos, self.colors, self.names):
+            theta, theta_opt, theta_mom, theta_final = res
+            T, N, p = theta.shape
+            
+            legends.append(mlines.Line2D([], [], color=color, label=name))
 
-        if particles:
-            plt.plot(self.theta_emp[:, : , i].squeeze(), linewidth = 0.2, c = "blue")
-            plt.plot(self.theta_off[:, : , i].squeeze(), linewidth = 0.2, c = "red")
+            if particles:
+                plt.plot(theta[:, : , i].squeeze(), linewidth = 0.2, c = color)
+        
+            if optimal:
+                plt.plot(theta_opt[:, i], c = "black", linewidth = 3)
+            
+            if mom:
+                plt.plot(theta_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
+            
+            if ylim is None:
+                # Auto set up of limit
+                a_ymin, a_ymax = theta_opt[:, i].min(), theta_opt[:, i].max()
+                if ymin is None:
+                    ymin, ymax = a_ymin, a_ymax
+                else:
+                    ymin, ymax = min(ymin, a_ymin), max(ymax, a_ymax)
+        
         
         if optimal:
-            plt.plot(self.theta_emp_opt[:, i], c = "black", linewidth = 3)
-            plt.plot(self.theta_off_opt[:, i], c = "black", linewidth = 3)
             legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
-            
         if mom:
-            plt.plot(self.theta_emp_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
-            plt.plot(self.theta_off_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
             legends.append(mlines.Line2D([], [], color='black', linestyle="dotted", label='MOM', linewidth = 3))
-        
+            
         # Set dynamic limit (to deal with outliers)
-        ymin, ymax = self._get_born([self.theta_emp_opt[:, i], self.theta_off_opt[:, i]]) if ylim is None else ylim
+        if not(ylim is None):
+            ymin, ymax = ylim
+        else:
+            ymin, ymax = self._add_margin(ymin, ymax)
         plt.ylim(ymin, ymax)
   
-        plt.title("emphaticTD and offTD with {} particles".format(N))
+    
+        plt.title("TD with {} particles".format(N))
         plt.xlim(0, T)
         plt.ylabel("theta")
         plt.xlabel("steps")
@@ -123,32 +140,46 @@ class comparatorTD(object):
     def plot_msve(self, figure = True, ylim = None, particles = True, optimal = True):
         '''
             Plot the msve of theta across the particles
-        '''
-        T, N, p = self.theta_emp.shape
-        
-        # Compute MSVE
-        msve_emp = self.model.parallel_msve(self.theta_emp)
-        msve_off = self.model.parallel_msve(self.theta_off)
-        msve_emp_opt = self.model.msve(self.theta_emp_opt)
-        msve_off_opt = self.model.msve(self.theta_off_opt)
-        
+        '''        
         if figure: plt.figure()
         
         legends = []
-        legends.append(mlines.Line2D([], [], color='red', label='off TD'))
-        legends.append(mlines.Line2D([], [], color='blue', label='emphatic TD'))
+        
+        ymin, ymax = None, None
+        
+        for res, algo, color, name in zip(self.res, self.algos, self.colors, self.names):
+            theta, theta_opt, theta_mom, theta_final = res
+            T, N, p = theta.shape
+            
+            # Compute msve
+            msve = self.model.parallel_msve(theta)
+            msve_opt = self.model.msve(theta_opt)
+            
+            legends.append(mlines.Line2D([], [], color=color, label=name))
 
-        if particles:
-            plt.plot(msve_emp, linewidth = 0.2, c = "blue")
-            plt.plot(msve_off, linewidth = 0.2, c = "red")
+            if particles:
+                plt.plot(msve, linewidth = 0.2, c = color)
+        
+            if optimal:
+                plt.plot(msve_opt, c = "black", linewidth = 3)
+            
+            # Auto set up of limit
+            if ylim is None:
+                a_ymin, a_ymax = msve_opt.min(), msve_opt.max()
+                if ymin is None:
+                    ymin, ymax = a_ymin, a_ymax
+                else:
+                    ymin, ymax = min(ymin, a_ymin), max(ymax, a_ymax)
+        
         
         if optimal:
-            plt.plot(msve_emp_opt, c = "black", linewidth = 3)
-            plt.plot(msve_off_opt, c = "black", linewidth = 3)
             legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
         
         # Set dynamic limit (to deal with outliers)
-        ymin, ymax = self._get_born([msve_emp_opt, msve_off_opt]) if ylim is None else ylim
+        if not(ylim is None):
+            ymin, ymax = ylim
+        else:
+            ymin, ymax = self._add_margin(ymin, ymax)
         plt.ylim(ymin, ymax)
 
         plt.title("MSVE with {} particles".format(N))
@@ -158,20 +189,9 @@ class comparatorTD(object):
         plt.legend(handles=legends)
         
         
-            
-    def _get_born(self, X, margin = 0.1):
-        '''
-            Return the born for all numpy arrays in X.
-            Usefull to find good limit for y in plot.
-        '''
-        ymin, ymax = [], []
-        for x in X:
-            ymin.append(x.min())
-            ymax.append(x.max())
-        ymin, ymax = min(ymin), max(ymax)
         
+    def _add_margin(self, ymin, ymax, margin = 0.1):
         l = ymax - ymin
-        ymin -= l*margin
-        ymax += l*margin
+        margin = round(l*margin)
+        return ymin - margin, ymax + margin
         
-        return ymin, ymax

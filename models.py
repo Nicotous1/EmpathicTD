@@ -16,7 +16,6 @@ class Model(object):
         self.R = np.array(R) # The immediate reward for each state
         self.pi = pi # The target policy
         self.mu = self.pi if mu is None else mu # The behavior policy (default is the target policy)
-        self.alpha = alpha
         self.S0 = S0
         self.theta0 = theta0
         
@@ -29,7 +28,7 @@ class Model(object):
         self.I = np.ones(self.N_states)/self.N_states if I is None else np.array(I) # Intereset for each state (default is uniform)
         self.lambdas = np.zeros(self.N_states) if lambdas is None else np.array(lambdas) # bootsrap ratio for each state (default is zeros for all)
         self.discounts = np.zeros(self.N_states) if discounts is None else np.array(discounts) # Discount rate for each state (default is zero for all)
-        self.v_pi = np.array(v_pi)
+        self.v_pi = None if v_pi is None else np.array(v_pi)
         
 #
 # Utilities
@@ -38,6 +37,8 @@ class Model(object):
         '''
             Compute the MSVE for only one particle
         '''
+        if self.v_pi is None:
+            raise ValueError("v_pi must be defined to compute the msve !")
         v_estimates = np.dot(theta, self.features.transpose())
         msve = np.linalg.norm((v_estimates - self.v_pi), axis = 1)
         return msve
@@ -46,6 +47,8 @@ class Model(object):
         '''
             Compute the MSVE for multiple particles in parallel
         '''
+        if self.v_pi is None:
+            raise ValueError("v_pi must be defined to compute the msve !")
         v_estimates = np.tensordot(self.features, thetas, axes = [[1], [2]])
         v_estimates = np.moveaxis(v_estimates, 0, -1) # Change axis [S, T, N] -> [T, N, S]
         msve = np.linalg.norm((v_estimates - self.v_pi), axis = 2)
