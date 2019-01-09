@@ -96,16 +96,17 @@ class comparatorTD(object):
             theta, theta_opt, theta_mom, theta_final = res
             T, N, p = theta.shape
             
-            legends.append(mlines.Line2D([], [], color=color, label=name))
 
             if particles:
                 plt.plot(theta[:, : , i].squeeze(), linewidth = 0.2, c = color)
+                legends.append(mlines.Line2D([], [], color=color, label=name))
         
+            color_others = "black" if particles else color
             if optimal:
-                plt.plot(theta_opt[:, i], c = "black", linewidth = 3)
+                plt.plot(theta_opt[:, i], c = color_others, linewidth = 3)
             
             if mom:
-                plt.plot(theta_mom[:, i], linewidth = 3, c = "black", linestyle = "dotted")
+                plt.plot(theta_mom[:, i], linewidth = 3, c = color_others, linestyle = "dotted")
             
             if ylim is None:
                 # Auto set up of limit
@@ -155,13 +156,13 @@ class comparatorTD(object):
             msve = self.model.parallel_msve(theta)
             msve_opt = self.model.msve(theta_opt)
             
-            legends.append(mlines.Line2D([], [], color=color, label=name))
-
             if particles:
                 plt.plot(msve, linewidth = 0.2, c = color)
+                legends.append(mlines.Line2D([], [], color=color, label=name))
         
+            color_others = "black" if particles else color
             if optimal:
-                plt.plot(msve_opt, c = "black", linewidth = 3)
+                plt.plot(msve_opt, c = color_others, linewidth = 3)
             
             # Auto set up of limit
             if ylim is None:
@@ -192,6 +193,6 @@ class comparatorTD(object):
         
     def _add_margin(self, ymin, ymax, margin = 0.1):
         l = ymax - ymin
-        margin = round(l*margin)
+        margin = l*margin
         return ymin - margin, ymax + margin
         
