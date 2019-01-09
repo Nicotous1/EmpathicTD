@@ -1,5 +1,6 @@
 import numpy as np
 from utils import to_array_of_vectors
+from scipy.optimize import minimize
 
 class Model(object):
     '''
@@ -16,8 +17,8 @@ class Model(object):
         self.R = np.array(R) # The immediate reward for each state
         self.pi = pi # The target policy
         self.mu = self.pi if mu is None else mu # The behavior policy (default is the target policy)
-        self.S0 = S0
-        self.theta0 = theta0
+        self.S0 = int(S0)
+        self.theta0 = np.array(theta0)
         
         # Compute parameters
         self.phi = np.divide(self.pi.P, self.mu.P, out=np.zeros_like(self.pi.P), where=self.mu.P!=0) # Importance sampling ratio
@@ -33,6 +34,17 @@ class Model(object):
 #
 # Utilities
 #        
+        
+    def msve_min(self):
+        '''
+            Compute the minimum of the msve which exist because it is convex.
+            Return x_min, min
+        '''
+        def msve(theta):
+            return np.sum((np.dot(self.features, theta) - self.v_pi)**2 * self.mu.d * self.I)
+        m = minimize(msve, self.theta0)
+        return m.x, m.fun
+        
     def msve(self, theta):
         '''
             Compute the MSVE for only one particle
@@ -40,7 +52,8 @@ class Model(object):
         if self.v_pi is None:
             raise ValueError("v_pi must be defined to compute the msve !")
         v_estimates = np.dot(theta, self.features.transpose())
-        msve = np.linalg.norm((v_estimates - self.v_pi), axis = 1)
+        msve = ((v_estimates - self.v_pi)**2) * self.mu.d * self.I
+        msve = np.sum(msve, axis = 1)
         return msve
     
     def parallel_msve(self, thetas):
@@ -51,6 +64,8 @@ class Model(object):
             raise ValueError("v_pi must be defined to compute the msve !")
         v_estimates = np.tensordot(self.features, thetas, axes = [[1], [2]])
         v_estimates = np.moveaxis(v_estimates, 0, -1) # Change axis [S, T, N] -> [T, N, S]
-        msve = np.linalg.norm((v_estimates - self.v_pi), axis = 2)
+        msve = ((v_estimates - self.v_pi)**2) * self.mu.d * self.I
+        msve = np.sum(msve, axis = 2)
+        #msve = np.linalg.norm((v_estimates - self.v_pi), axis = 2)
         return msve
         
