@@ -43,7 +43,7 @@ class AbstractTD(object):
             return np.array(self.lambdas)
         except:
             # Lambdas is a number
-            n = model.N_states
+            n = model.n
             return np.array([self.lambdas]*n)
             
      
@@ -91,7 +91,7 @@ class OffTD(AbstractTD):
         '''
             Compute the matrix A and b for the model
         '''
-        Id = np.eye(model.N_states)
+        Id = np.eye(model.n)
         
         gammas = np.diag(model.discounts)
         
@@ -170,7 +170,7 @@ class EmphaticTD(AbstractTD):
         '''
             Compute the matrix A and b for the model
         '''
-        Id = np.eye(model.N_states)
+        Id = np.eye(model.n)
         
         i = model.mu.d*model.I
         gammas = np.diag(model.discounts)
