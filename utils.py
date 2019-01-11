@@ -76,9 +76,9 @@ class comparatorTD(object):
             theta = algo.run(model, T, N, verbose = verbose)   
             theta_opt = algo.optimal_run(model, T)
             theta_mom = mom(np.swapaxes(theta, 0, 1))
-            theta_final = algo.optimal(self.model)  
+            #theta_final = algo.optimal(self.model)  
             
-            self.res.append((theta, theta_opt, theta_mom, theta_final))
+            self.res.append((theta, theta_opt, theta_mom))
         
         
         
@@ -93,7 +93,7 @@ class comparatorTD(object):
         
         ymin, ymax = None, None
         for res, algo, color, name in zip(self.res, self.algos, self.colors, self.names):
-            theta, theta_opt, theta_mom, theta_final = res
+            theta, theta_opt, theta_mom = res
             T, N, p = theta.shape
             
 
@@ -138,7 +138,7 @@ class comparatorTD(object):
         
         
         
-    def plot_msve(self, figure = True, ylim = None, particles = True, optimal = True):
+    def plot_msve(self, figure = True, ylim = None, particles = True, optimal = True, mom = True):
         '''
             Plot the msve of theta across the particles
         '''        
@@ -149,20 +149,25 @@ class comparatorTD(object):
         ymin, ymax = None, None
         
         for res, algo, color, name in zip(self.res, self.algos, self.colors, self.names):
-            theta, theta_opt, theta_mom, theta_final = res
+            theta, theta_opt, theta_mom = res
             T, N, p = theta.shape
             
             # Compute msve
             msve = self.model.parallel_msve(theta)
             msve_opt = self.model.msve(theta_opt)
+            msve_mom = self.model.msve(theta_mom)
+            
+            legends.append(mlines.Line2D([], [], color=color, label=name))
             
             if particles:
                 plt.plot(msve, linewidth = 0.2, c = color)
-                legends.append(mlines.Line2D([], [], color=color, label=name))
         
             color_others = "black" if particles else color
             if optimal:
                 plt.plot(msve_opt, c = color_others, linewidth = 3)
+            
+            if mom:
+                plt.plot(msve_mom, linewidth = 3, c = color_others, linestyle = "dotted")
             
             # Auto set up of limit
             if ylim is None:
@@ -173,8 +178,13 @@ class comparatorTD(object):
                     ymin, ymax = min(ymin, a_ymin), max(ymax, a_ymax)
         
         
-        if optimal:
+        if optimal and (particles or mom):
             legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
+            
+        if mom and (particles or optimal):
+            legends.append(mlines.Line2D([], [], color='black', label='MOM', linewidth = 3, linestyle = "dotted"))
+            
+            
         
         # Set dynamic limit (to deal with outliers)
         if not(ylim is None):
