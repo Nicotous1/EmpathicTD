@@ -96,10 +96,9 @@ class comparatorTD(object):
             theta, theta_opt, theta_mom = res
             T, N, p = theta.shape
             
-
+            legends.append(mlines.Line2D([], [], color=color, label=name))
             if particles:
                 plt.plot(theta[:, : , i].squeeze(), linewidth = 0.2, c = color)
-                legends.append(mlines.Line2D([], [], color=color, label=name))
         
             color_others = "black" if particles else color
             if optimal:
@@ -117,10 +116,11 @@ class comparatorTD(object):
                     ymin, ymax = min(ymin, a_ymin), max(ymax, a_ymax)
         
         
-        if optimal:
+        if optimal and (particles or mom):
             legends.append(mlines.Line2D([], [], color='black', label='deterministic', linewidth = 3))
-        if mom:
-            legends.append(mlines.Line2D([], [], color='black', linestyle="dotted", label='MOM', linewidth = 3))
+            
+        if mom and (particles or optimal):
+            legends.append(mlines.Line2D([], [], color='black', label='MOM', linewidth = 3, linestyle = "dotted"))
             
         # Set dynamic limit (to deal with outliers)
         if not(ylim is None):

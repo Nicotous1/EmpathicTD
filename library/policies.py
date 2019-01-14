@@ -54,6 +54,14 @@ class Policy(object):
             S_new[idxs] = np.random.choice(len(self.P), n, p = self.P[s])
         return S_new
     
+    def __str__(self):
+        if hasattr(self, 'P'): # the policy is defined
+            res = "Transition matrix :\n"
+            res += str(self.P) + "\n"
+            res += "Stationary distribution : {}".format(self.d)
+            return res
+        else:
+            return "This policy has not been fitted yet !"
     
     
     
